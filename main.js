@@ -7,6 +7,10 @@ class User{
         this.zzimList=[];
         this.residence = residence;
     }
+
+    update(product) {
+        console.log(`${product}의 가격이 변경되었습니다!`);
+    }
 }
 
 class Func {
@@ -29,52 +33,49 @@ class Func {
         }
     }
 
-    // setLocation(residence) {
-    //     if(residence==){
-    //         console.log("거래 장소를 설정합니다.");
-    //     }
-    //     else{
-    //         console.log("거래할 수 없는 지역입니다!");
-    //     }
-    // }
+    setLocation() {
+        console.log("거래 장소를 설정합니다.");
+    }
 
-    // writeDescription(){
-    //     console.log("설명글을 작성해주세요!");
-    // }
+    writeDescription(){
+        console.log("설명글을 작성해주세요!");
+    }
 }
 
 class ProductManager{
-    constructor(user){
-        // this.user = user;
+    constructor(){
         this.func = new Func();
     }
 
-    addInterest(product) { //관심목록 추가
-        this.zzimList.push(product);
+    addInterest(productName, seller, consumer) { //관심목록 추가
+        const product = seller.sellingList.find(p => p.name === productName);
+        consumer.zzimList.push(product);
+        product.attach(consumer);
     }
 
-    sellProduct(name, price, type){ //물품판매
+    sellProduct(name, price, type, seller){ //물품판매
         let product;
+        const SELLINGLIST = seller.sellingList; 
         switch (type) {
-            case 'Clothes':
+            case 'clothes':
                 const sex = 'Male';
                 const size = 'XL';
                 product = new Clothes(name, price, sex, size);
                 break;
-            case 'Food':
+            case 'food':
                 const expirationDate = '2024-07-08';
                 product = new Food(name, price, expirationDate);
                 break;
-            case 'Toy':
+            case 'toy':
                 product = new Toy(name, price);
                 break;
             default:
-                throw new Error('Invalid product type');
+                throw new Error('잘못된 제품 타입');
         }
 
-        this.user.sellingList.push(product);
-        product.attach(this.user);
+        SELLINGLIST.push(product);
 
+        console.log("----제품에 대한 설명과 사진, 거래장소를 설정해 주세요.----");
         this.func.writeDescription();//설명글 작성
         this.func.addPhoto();//사진추가
         this.func.setLocation(); //거래 장소 설정
@@ -93,17 +94,14 @@ class ProductManager{
         //판매 목록에서 물품제거
     }
 
-    changePrice(productName, price) {
-        const product = this.user.sellingList.find(p => p.name === productName);
+    changePrice(productName, price, seller) {
+        const product = seller.sellingList.find(p => p.name === productName);
         if (product) {
+            console.log("----제품의 가격을 변경합니다.----");
             product.discount(price);
         } else {
-            console.log('Product not found.');
+            console.log('제품을 찾을 수 없습니다.');
         }
-    }
-
-    update(product) {
-        console.log(`${product}의 가격이 변경되었습니다!`);
     }  
 }
 
@@ -166,7 +164,7 @@ class Product{ //구매 글을 올릴 때 해당 클래스의 인스턴스를 �
     }
 }
 
-class Print { //목록 출력을 명령어 패턴을 사용하여 작성
+class Print { //목록 출력을 Command pattern을 사용하여 작성
     setCategoryCommand(categoryCommand, sellingList){
         this.categoryCommand = categoryCommand;
         this.sellingList = sellingList;
@@ -259,6 +257,9 @@ class Toy extends Product{
 //main 실행문
 console.log("------------콜라비-----------");
 const sellingList =[];
+const clubList=[];
+const storeList=[];
+
 let type= 'food';
 sellingList.push(new Clothes('c1', 50000, 'Male', 'L'));
 sellingList.push(new Clothes('c2', 35000, 'Female', 'S'));
@@ -267,7 +268,6 @@ sellingList.push(new Food('돈까스', 15000, '2025-07-05'));
 sellingList.push(new Food('만두', 10000, '2025-10-04'));
 sellingList.push(new Food('치킨', 10000, '2024-10-29'));
 sellingList.push(new Toy('Lego', 50000));
-console.log(sellingList)
 const print = new Print();
 
 Print.showCategory(); //목록 출력, 음식을 선택했다 가정
@@ -287,8 +287,11 @@ switch(type){
 }
 
 const productManager = new ProductManager();
-const user1 = new User('김원형', 36.5, '남양주');
-productManager.sellProduct().bind(user1);
+const seller = new User('김원형', 36.5, '남양주');
+const consumer = new User('김한별', 36.5, '노원');
+productManager.sellProduct('robot', 450000, 'toy', seller);
+productManager.addInterest('robot', seller, consumer);
+productManager.changePrice('robot', 5000, seller);
 
 //1. observer가 관측하는 대상
 //2. command pattern
