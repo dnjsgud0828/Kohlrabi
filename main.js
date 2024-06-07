@@ -7,24 +7,87 @@ class User{
         this.zzimList=[];
         this.chatList = []; //채팅목록
         this.residence = residence;
-        this.productManager =new ProductManager();
+    }
+}
+
+class Func {
+    addPhoto() {
+        try{
+            console.log("사진을 올려주세요.");
+            console.log("업로드 완료!");
+        }
+        catch{
+            console.log("오류발생!");
+        }
+    }
+
+    chat() {
+        try{
+            console.log("채팅이 시작됩니다.");
+        }
+        catch{
+            console.log("오류발생!");
+        }
+    }
+
+    setLocation(residence) {
+        if(residence==){
+            console.log("거래 장소를 설정합니다.");
+        }
+        else{
+            console.log("거래할 수 없는 지역입니다!");
+        }
+    }
+
+    writeDescription(){
+        console.log("설명글을 작성해주세요!");
+    }
+}
+
+class ProductManager{
+    constructor(user){
+        this.user = user;
+        this.func = new Func();
     }
 
     addInterest(product) { //관심목록 추가
         this.zzimList.push(product);
     }
 
-    update(product) {
-        console.log(`${product}의 가격이 변경되었습니다!`);
+    sellProduct(name, price, type){ //물품판매
+        let product;
+        switch (type) {
+            case 'Clothes':
+                const sex = 'Male';
+                const size = 'XL';
+                product = new Clothes(name, price, sex, size);
+                break;
+            case 'Food':
+                const expirationDate = '2024-07-08';
+                product = new Food(name, price, expirationDate);
+                break;
+            case 'Toy':
+                product = new Toy(name, price);
+                break;
+            default:
+                throw new Error('Invalid product type');
+        }
+
+        this.user.sellingList.push(product);
+        product.attach(this.user);
+
+        this.func.writeDescription();//설명글 작성
+        this.func.addPhoto();//사진추가
+        this.func.setLocation(); //거래 장소 설정
     }
 
-    sellProduct(name, price, type){
-        this.productManager.sellProduct(name, price, type);
-       //해당 제품에 대한 설명
-       //사진 추가
+    purchaseProduct(){//물품 구매
+        this.func.chat();
+        //거래 완료시 물품의 상태 변경
+        //판매 목록에서 물품제거
     }
 
-    changePrice(productName, price) { //가격 변동
+    changePrice(productName, price) {
         const product = this.user.sellingList.find(p => p.name === productName);
         if (product) {
             product.discount(price);
@@ -33,34 +96,43 @@ class User{
         }
     }
 
-    purchaseProduct(){//물품 구매
-
-    }
-
-    registerMeeting(){ //모임 등록
-
+    update(product) {
+        console.log(`${product}의 가격이 변경되었습니다!`);
     }  
-    
-    reserveStore(){ //매장 예약
-
-    }
 }
 
-class System { //목록 출력을 명령어 패턴을 사용하여 작성
+class ClubManager{ //모임 관리
     constructor(){
-
+        this.func = new Func();
+    }
+    
+    addClub(){
+        this.func.writeDescription();
+        this.func.addPhoto();
+        this.func.setLocation();
     }
 
-    setCategoryCommand(categoryCommand){
-        this.categoryCommand = categoryCommand;
-    }
-
-    show(){
-        this.categoryCommand.showCategory();
+    participateClub(){
+        this.func.chat();
     }
 }
 
-//구매기능
+class ReserveManager{ //예약관리
+    constructor(){
+        this.func = new Func();
+    }
+    
+    addStore(){ //가게 홍보글 게시
+        this.func.writeDescription();
+        this.func.addPhoto();
+        this.func.setLocation();
+    }   
+
+    reserveStore(){
+        this.func.chat();
+    }
+}
+
 class product{ //구매 글을 올릴 때 해당 클래스의 인스턴스를 전달
     constructor(name, price, type){
         this.name = name; //상품명
@@ -85,6 +157,20 @@ class product{ //구매 글을 올릴 때 해당 클래스의 인스턴스를 �
     discount(price){
         this.price-=price;
         this.notify();
+    }
+}
+
+class Print { //목록 출력을 명령어 패턴을 사용하여 작성
+    setCategoryCommand(categoryCommand){
+        this.categoryCommand = categoryCommand;
+    }
+
+    show(){
+        this.categoryCommand.showList();
+    }
+
+    static showCategory(){
+        console.log('-------------메뉴선택------------1. 중고거래 \n2. 예약 \n3. 인원 모집');
     }
 }
 
@@ -132,7 +218,7 @@ class Clothes extends Product{
         this.category = new Command();
     }
 
-    showCategory(){
+    showList(){
         this.category.showClothes();
     }
 };
@@ -144,7 +230,7 @@ class Food extends Product{
         this.category = new Command();
     }
 
-    showCategory(){
+    showList(){
         this.category.showFoods();
     }
 };
@@ -155,70 +241,17 @@ class Toy extends Product{
         this.category = new Command();
     }
 
-    showCategory(){
+    showList(){
         this.category.showToys();
-    }
-}
-
-class ProductManager {
-    constructor(user) {
-        this.user = user;
-    }
-
-    sellProduct(name, price, type) {
-        let product;
-        switch (type) {
-            case 'Clothes':
-                const sex = 'Male';
-                const size = 'XL';
-                product = new Clothes(name, price, sex, size);
-                break;
-            case 'Food':
-                const expirationDate = '2024-07-08';
-                product = new Food(name, price, expirationDate);
-                break;
-            case 'Toy':
-                product = new Toy(name, price);
-                break;
-            default:
-                throw new Error('Invalid product type');
-        }
-
-        this.user.sellingList.push(product);
-        product.attach(this.user);
     }
 }
 
 //main 실행문
 console.log("------------콜라비-----------");
-const sys = new System();
-const user1 = new User('원형', 36.5, '남양주');
-const user2 = new User('한별', 36.5, '서울');
-const user3 = new User('고윤정', 36.5, '서울');
-user1.sellProduct('robot', 15000, 'toy');
 
-console.log('-----------------------------\n1. 중고거래 \n2. 예약 \n3. 인원 모집\n-----------------------------');
-let type = 'toy' //장난감을 구매한다 가정
-switch(type){
-    case 'clothes':{
-        sys.setCategoryCommand(new Clothes());
-        break;
-    }
-    case 'food':{
-        sys.setCategoryCommand(new Food());
-        break;
-    }
-    case 'toy':{
-        sys.setCategoryCommand(new Toy());
-        break;
-    }      
-}
-sys.show();
-user2.addInterest('robot');
-user1.changePrice(5000);
 
 //1. observer가 관측하는 대상
 //2. command pattern
 //3. 문자열을 입력해서, 해당 객체를 찜리스트에 넣기
-//4. 
-//추가로 구현해야하는 대상들
+
+//사용한 디자인 패턴: Facade(Func -> ProductManager... ), Observer, Command => show
