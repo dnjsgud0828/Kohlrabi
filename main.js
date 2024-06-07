@@ -5,7 +5,6 @@ class User{
         this.sellingList = []; //판매물품
         this.purchaseList = []; //구매목록
         this.zzimList=[];
-        this.chatList = []; //채팅목록
         this.residence = residence;
     }
 }
@@ -30,23 +29,23 @@ class Func {
         }
     }
 
-    setLocation(residence) {
-        if(residence==){
-            console.log("거래 장소를 설정합니다.");
-        }
-        else{
-            console.log("거래할 수 없는 지역입니다!");
-        }
-    }
+    // setLocation(residence) {
+    //     if(residence==){
+    //         console.log("거래 장소를 설정합니다.");
+    //     }
+    //     else{
+    //         console.log("거래할 수 없는 지역입니다!");
+    //     }
+    // }
 
-    writeDescription(){
-        console.log("설명글을 작성해주세요!");
-    }
+    // writeDescription(){
+    //     console.log("설명글을 작성해주세요!");
+    // }
 }
 
 class ProductManager{
     constructor(user){
-        this.user = user;
+        // this.user = user;
         this.func = new Func();
     }
 
@@ -81,8 +80,15 @@ class ProductManager{
         this.func.setLocation(); //거래 장소 설정
     }
 
-    purchaseProduct(){//물품 구매
+    purchaseProduct(product){//물품 구매
         this.func.chat();
+        product.state = 0; //거래중
+        if(true){ //거래가 성사되었을 때 수행
+    
+        }
+        else {
+            product.state =1; //다시 판매중 상태로 변경
+        }
         //거래 완료시 물품의 상태 변경
         //판매 목록에서 물품제거
     }
@@ -133,12 +139,12 @@ class ReserveManager{ //예약관리
     }
 }
 
-class product{ //구매 글을 올릴 때 해당 클래스의 인스턴스를 전달
+class Product{ //구매 글을 올릴 때 해당 클래스의 인스턴스를 전달
     constructor(name, price, type){
         this.name = name; //상품명
         this.price = price; //가격
         this.type= type;// 품목
-        this.state = 0; //0이 디폴트(0: 판매중, 1: 거래 완료, 2: 거래 진행중)
+        this.state = 1; //1이 디폴트(0: 거래 진행중, 1: 판매중)
         this.observers=[]; 
     }
 
@@ -161,16 +167,17 @@ class product{ //구매 글을 올릴 때 해당 클래스의 인스턴스를 �
 }
 
 class Print { //목록 출력을 명령어 패턴을 사용하여 작성
-    setCategoryCommand(categoryCommand){
+    setCategoryCommand(categoryCommand, sellingList){
         this.categoryCommand = categoryCommand;
+        this.sellingList = sellingList;
     }
 
-    show(){
+    showList(){
         this.categoryCommand.showList();
     }
 
     static showCategory(){
-        console.log('-------------메뉴선택------------1. 중고거래 \n2. 예약 \n3. 인원 모집');
+        console.log('-------------메뉴선택------------\n1. 중고거래 \n2. 예약 \n3. 인원 모집');
     }
 }
 
@@ -179,8 +186,8 @@ class Command {
         console.log("-------------판매물품-------------");
         let i=0;
         for (let e of sellingList){
-            if(sellingList[e].type=='clothes'){
-                console.log(`${i}. ${sellingList[e]}`);
+            if(e.type=='clothes'){
+                console.log(`${i}. ${e.name}`);
                 i++;
             } 
         }
@@ -190,8 +197,8 @@ class Command {
         console.log("-------------판매물품-------------");
         let i=0;
         for (let e of sellingList){
-            if(sellingList[e].type=='food'){
-                console.log(`${i}. ${sellingList[e]}`);
+            if(e.type=='food'){
+                console.log(`${i}. ${e.name}`);
                 i++;
             } 
         }
@@ -201,8 +208,8 @@ class Command {
         console.log("-------------판매물품-------------");
         let i=0;
         for (let e of sellingList){
-            if(sellingList[e].type=='toy'){
-                console.log(`${i}. ${sellingList[e]}`);
+            if(e.type=='toy'){
+                console.log(`${i}. ${e.name}`);
                 i++;
             } 
         }
@@ -214,6 +221,7 @@ class Clothes extends Product{
     constructor(name, price, sex, size){
         super(name, price);
         this.sex = sex;
+        this.type = 'clothes';
         this.size = size;
         this.category = new Command();
     }
@@ -226,6 +234,7 @@ class Clothes extends Product{
 class Food extends Product{
     constructor(name, price, expirationDate){
         super(name, price);
+        this.type = 'food';
         this.expirationDate = expirationDate;
         this.category = new Command();
     }
@@ -238,6 +247,7 @@ class Food extends Product{
 class Toy extends Product{
     constructor(name, price){
         super(name, price);
+        this.type = 'toy';
         this.category = new Command();
     }
 
@@ -248,7 +258,37 @@ class Toy extends Product{
 
 //main 실행문
 console.log("------------콜라비-----------");
+const sellingList =[];
+let type= 'food';
+sellingList.push(new Clothes('c1', 50000, 'Male', 'L'));
+sellingList.push(new Clothes('c2', 35000, 'Female', 'S'));
+sellingList.push(new Clothes('c3', 50000, 'Male', 'XL'));
+sellingList.push(new Food('돈까스', 15000, '2025-07-05'));
+sellingList.push(new Food('만두', 10000, '2025-10-04'));
+sellingList.push(new Food('치킨', 10000, '2024-10-29'));
+sellingList.push(new Toy('Lego', 50000));
+console.log(sellingList)
+const print = new Print();
 
+Print.showCategory(); //목록 출력, 음식을 선택했다 가정
+switch(type){
+    case 'clothes':
+        print.setCategoryCommand(new Clothes(), sellingList);
+        print.showList();
+        break;
+    case 'food':
+        print.setCategoryCommand(new Food(), sellingList);
+        print.showList();
+        break;
+    case 'toy':
+        print.setCategoryCommand(new Toy(), sellingList);
+        print.showList();
+        break;
+}
+
+const productManager = new ProductManager();
+const user1 = new User('김원형', 36.5, '남양주');
+productManager.sellProduct().bind(user1);
 
 //1. observer가 관측하는 대상
 //2. command pattern
